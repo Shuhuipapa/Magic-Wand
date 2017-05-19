@@ -1,7 +1,7 @@
 ######################################################
 # 
 # Project: Magic wand
-# File:     123.py win.sh lumos.sh stupefy.sh
+# File:     123.py speechtotext.sh win.sh lumos.sh stupefy.sh
 # Authors:	Shuhui Ding(sd784) Yilong Zhong(yz995)
 # Date:     May 2017
 #
