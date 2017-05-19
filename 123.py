@@ -33,27 +33,16 @@ def Spell(spell):
     #clear all checks
     global ig
     ig=[]
-    #Invoke IoT (or any other) actions here
-    #cv2.putText(frame, spell, (5, 25),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0),2)
-    
+    #Invoke actions here    
     if (spell=="Wingardium Leviosa" ):
-        #print "GPIO trinket"
         subprocess.call("./win.sh")
-        #pi.write(trinket_pin,0)
-        #time.sleep(1)
-        #pi.write(trinket_pin,1)
     if (spell=="Lumos" ):
-        #print "GPIO ON"
         subprocess.call("./lumos.sh")
-        #print("123")
-        #pi.write(switch_pin,1)
     if (spell=="Stupefy" ):
-        #print "GPIO OFF"
-        #pi.write(switch_pin,0)
         subprocess.call("./stupefy.sh")
     open('stt.txt','w').close()
 def IsGesture(a,b,c,d):
-    #record basic movements - TODO: trained gestures
+    #record basic movements 
     if ((a<(c-5))&(abs(b-d)<5)):
         ig.insert(0,"left")
     elif ((c<(a-5))&(abs(b-d)<5)):
@@ -78,7 +67,7 @@ def IsGesture(a,b,c,d):
 cx=0
 cy=0
 ig=[]
-
+#the following codes are used only on piTFT
 #os.putenv('SDL_VIDEODRIVER', 'fbcon') # Display on piTFT
 #os.putenv('SDL_FBDEV', '/dev/fb1') #
 #os.putenv('SDL_MOUSEDRV', 'TSLIB') # Track mouse clicks on piTFT
@@ -102,72 +91,49 @@ for my_text, text_pos in my_buttons.items():
  rect=text_surface.get_rect(center=text_pos)
  screen.blit(text_surface,rect)
 while True:
-#	for event in pygame.event.get():
-#	 if(event.type is pygame.MOUSEBUTTONDOWN):
-#	  pos=pygame.mouse.get_pos()
-#	  x,y=pos
-#	  if x<80:
-#		print "start"
+
 		rval, frame = cam.read()
 		frame=cv2.flip(frame,0)
+		#convert to grayscale image
 		frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		b,g,r = cv2.split(frame)
 		frame_gray=b
+		#a way to detect wand tip is to use canny edge operator
 		#edge=cv2.Canny(frame_gray,n,n/2)
+		#do thresholding
 		ret,thresh=cv2.threshold(frame_gray,th,255,cv2.THRESH_BINARY)
+		#do contours finding
 		contours,hier=cv2.findContours(thresh,cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 		cv2.drawContours(frame_gray,contours,-1,(0,0,255))
 		p0=[]
-		mask = np.zeros_like(frame_gray)
-		#if len(contours)>1:
-		#cv2.putText(frame, "Too bright to cast dark spells", (80,220), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),2)
 		for cnt in contours:
+		   #assign old centroid coordinates
 		   cx_old=cx
 		   cy_old=cy
 		   p=cv2.arcLength(cnt,True)
                    s=cv2.contourArea(cnt)
 		   if s!=0:
+			#compactness analysis, extract the blob which is more likely to a circle
                    	c=p*p/s
-		   if 4<cv2.contourArea(cnt):# and c<25:
+		   if 4<cv2.contourArea(cnt) and c<25:
+			#Moments analysis, mainly for centroid drawing
 			try:
 				M=cv2.moments(cnt)
-				#cy_old=cy
-				#cx_old=cx
-				#p=cv2.arcLength(cnt,True)
-				#s=cv2.contourArea(cnt)
-				#c=p*p/s
 				cy=int(M['m01']/M['m00'])
 				cx=int(M['m10']/M['m00'])
-				#dist = math.hypot(cx - cx_old, cy - cy_old)
-				#if movement distance > value && <80, consider it is a pattern movement
-				#if 5<dist<80:
-					#cv2.line(mask, (a,b),(c,d),(0,255,0), 2)
-					#IsGesture(a,b,c,d,i)
 				cv2.circle(frame,(cx,cy),2,(0,0,255),2)
 				p0.append([cx,cy])
 			except:
 				pass
-		#if first:
-		#p0=[p0]
-		#cx_old=cx
-		#cy_old=cy
-#		pygame.display.set_caption('Hello World!')
-#		clip = VideoFileClip('Untitled.mp4')
-#		clip.preview()
-#		omxplayer /home/pi/Untitled.mp4
 		for event in pygame.event.get():
 		 if(event.type is pygame.MOUSEBUTTONDOWN) :
                   pos=pygame.mouse.get_pos()
       		  x,y=pos
 		  if x<80:
 		   print "start"
+		   #at the same time start speech recogition in background
 		   subprocess.Popen("./speak.sh")
-                   #with open("stt.txt") as f:
-                    #data="".join(line.rstrip() for line in f)
-                   #font=pygame.font.Font(None,50)
-                   #text_surface=font.render(data,True,GREEN)
-                   #rect=text_surface.get_rect(center=(100,100))
-                   #screen.blit(text_surface,rect)
+
 		 elif(event.type is pygame.MOUSEBUTTONUP):
                   pos=pygame.mouse.get_pos()
                   x,y=pos
@@ -182,13 +148,7 @@ while True:
 		except:
                         pass
 
-		#print(p0)
-		#print("\n")
-			#first=0	
-		#circle=minEnclosingCircle(contours)	
-		#cv2.circle(frame_gray,circle,(0,0,255),1)
-		#p0 = cv2.HoughCircles(frame_gray,cv2.cv.CV_HOUGH_GRADIENT,3,100,param1=100,param2=30,minRadius=4,maxRadius=15)
-		#a=cv2.add(frame_gray)
+		#display video by showing each frame
 		cv2.imshow('test',frame)
 		#cv2.imshow('gray',frame_gray)
 		cv2.waitKey(1)
