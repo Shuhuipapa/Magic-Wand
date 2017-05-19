@@ -1,3 +1,13 @@
+######################################################
+# 
+# Project: Magic wand
+# File:     123.py win.sh lumos.sh stupefy.sh
+# Authors:	Shuhui Ding(sd784) Yilong Zhong(yz995)
+# Date:     May 2017
+#
+# “use Google speech recognition and opencv to do voice and gesture recognition and translate the combo to a certain movie”
+######################################################
+
 import io
 import cv2
 import os
