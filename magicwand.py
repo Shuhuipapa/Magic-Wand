@@ -28,7 +28,6 @@ cam.set(3, 320)
 cam.set(4, 240)
 th=125
 n=100
-first=1
 def Spell(spell):
     #clear all checks
     global ig
